@@ -13,8 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: [
-            'bale/webhook',
-            'bale/webhook/*',
+            'api/bale/webhook',
+            'api/bale/webhook/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
