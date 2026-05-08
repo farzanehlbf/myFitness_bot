@@ -17,7 +17,7 @@ class BaleWebhookController extends Controller
             return response()->json(['ok' => true]);
         }
 
-        $text = $data['message']['text'];
+        $text = trim($data['message']['text']);
         $chat_id = $data['message']['chat']['id'];
 
         $user = User::firstOrCreate([
@@ -28,10 +28,7 @@ class BaleWebhookController extends Controller
 
             $user->update(['step' => 'awaiting_gender']);
 
-            $this->sendMessage(
-                $chat_id,
-                "سلام 👋\nبرای شروع باید پروفایل شما را بسازیم.\n\nجنسیت شما؟ (آقا / خانم)"
-            );
+            $this->askGender($chat_id);
 
             return response()->json(['ok' => true]);
         }
@@ -39,6 +36,11 @@ class BaleWebhookController extends Controller
         switch ($user->step) {
 
             case 'awaiting_gender':
+
+                if (!in_array($text, ['آقا', 'خانم'])) {
+                    $this->askGender($chat_id);
+                    break;
+                }
 
                 $user->profile()->create([
                     'gender' => $text == 'آقا' ? 'male' : 'female'
@@ -52,6 +54,11 @@ class BaleWebhookController extends Controller
 
             case 'awaiting_age':
 
+                if (!is_numeric($text) || $text < 5 || $text > 100) {
+                    $this->sendMessage($chat_id, "لطفاً سن معتبر وارد کنید.");
+                    break;
+                }
+
                 $user->profile->update([
                     'age' => (int)$text
                 ]);
@@ -63,6 +70,11 @@ class BaleWebhookController extends Controller
                 break;
 
             case 'awaiting_weight':
+
+                if (!is_numeric($text) || $text < 20 || $text > 300) {
+                    $this->sendMessage($chat_id, "وزن معتبر وارد کنید.");
+                    break;
+                }
 
                 $user->profile->update([
                     'weight' => (int)$text
@@ -76,22 +88,32 @@ class BaleWebhookController extends Controller
 
             case 'awaiting_height':
 
+                if (!is_numeric($text) || $text < 100 || $text > 250) {
+                    $this->sendMessage($chat_id, "قد معتبر وارد کنید.");
+                    break;
+                }
+
                 $user->profile->update([
                     'height' => (int)$text
                 ]);
 
                 $user->update(['step' => 'awaiting_goal']);
 
-                $this->sendMessage($chat_id, "هدف شما چیست؟ (کاهش / افزایش / تثبیت)");
+                $this->askGoal($chat_id);
 
                 break;
 
             case 'awaiting_goal':
 
+                if (!in_array($text, ['کاهش وزن', 'افزایش وزن', 'تثبیت وزن'])) {
+                    $this->askGoal($chat_id);
+                    break;
+                }
+
                 $goal = 'maintain';
 
-                if (str_contains($text, 'کاهش')) $goal = 'loss';
-                if (str_contains($text, 'افزایش')) $goal = 'gain';
+                if ($text == 'کاهش وزن') $goal = 'loss';
+                if ($text == 'افزایش وزن') $goal = 'gain';
 
                 $user->profile->update([
                     'goal' => $goal
@@ -99,28 +121,41 @@ class BaleWebhookController extends Controller
 
                 $user->update(['step' => 'awaiting_activity']);
 
-                $this->sendMessage($chat_id, "میزان فعالیت شما؟ (کم / متوسط / زیاد)");
+                $this->askActivity($chat_id);
 
                 break;
 
             case 'awaiting_activity':
 
+                if (!in_array($text, ['کم', 'متوسط', 'زیاد'])) {
+                    $this->askActivity($chat_id);
+                    break;
+                }
+
+                $level = 'medium';
+
+                if ($text == 'کم') $level = 'low';
+                if ($text == 'زیاد') $level = 'high';
+
                 $user->profile->update([
-                    'activity_level' => 'medium'
+                    'activity_level' => $level
                 ]);
 
                 $user->update(['step' => 'completed']);
 
                 $this->sendMessage(
                     $chat_id,
-                    "✅ پروفایل شما تکمیل شد.\n\nحالا می‌توانید غذای خود را بنویسید.\nمثال:\nناهار: برنج و مرغ"
+                    "✅ پروفایل شما تکمیل شد.\n\nحالا غذای خود را بنویسید.\nمثال:\nناهار: برنج و مرغ",
+                    [
+                        'remove_keyboard' => true
+                    ]
                 );
 
                 break;
 
             case 'completed':
 
-                $this->sendMessage($chat_id, "پیام دریافت شد ✅");
+                $this->sendMessage($chat_id, "پیام شما دریافت شد ✅");
 
                 break;
         }
@@ -128,14 +163,79 @@ class BaleWebhookController extends Controller
         return response()->json(['ok' => true]);
     }
 
-    private function sendMessage($chat_id, $text)
+
+    private function askGender($chat_id)
     {
+        $this->sendMessage(
+            $chat_id,
+            "سلام 👋\nجنسیت شما چیست؟",
+            [
+                'keyboard' => [
+                    [
+                        ['text' => 'آقا'],
+                        ['text' => 'خانم']
+                    ]
+                ],
+                'resize_keyboard' => true
+            ]
+        );
+    }
+
+
+    private function askGoal($chat_id)
+    {
+        $this->sendMessage(
+            $chat_id,
+            "هدف شما چیست؟",
+            [
+                'keyboard' => [
+                    [
+                        ['text' => 'کاهش وزن'],
+                        ['text' => 'افزایش وزن']
+                    ],
+                    [
+                        ['text' => 'تثبیت وزن']
+                    ]
+                ],
+                'resize_keyboard' => true
+            ]
+        );
+    }
+
+
+    private function askActivity($chat_id)
+    {
+        $this->sendMessage(
+            $chat_id,
+            "میزان فعالیت شما؟",
+            [
+                'keyboard' => [
+                    [
+                        ['text' => 'کم'],
+                        ['text' => 'متوسط'],
+                        ['text' => 'زیاد']
+                    ]
+                ],
+                'resize_keyboard' => true
+            ]
+        );
+    }
+
+
+    private function sendMessage($chat_id, $text, $reply_markup = null)
+    {
+        $payload = [
+            'chat_id' => $chat_id,
+            'text' => $text
+        ];
+
+        if ($reply_markup) {
+            $payload['reply_markup'] = json_encode($reply_markup, JSON_UNESCAPED_UNICODE);
+        }
+
         Http::post(
             "https://tapi.bale.ai/bot" . env('BALE_BOT_TOKEN') . "/sendMessage",
-            [
-                'chat_id' => $chat_id,
-                'text' => $text
-            ]
+            $payload
         );
     }
 }
