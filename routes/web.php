@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 Route::get('/', function () {
     return response()->json([
         'status' => 'ok',
-        'message' => 'Laravel Bale Webhook is running!!'
+        'message' => 'Laravel Bale Webhook is running!!!!'
     ]);
 });
 
