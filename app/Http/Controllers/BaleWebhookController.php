@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Meal;
 use App\Services\NutritionAIService;
+use App\Models\ProcessedMessage;
 
 class BaleWebhookController extends Controller
 {
@@ -21,6 +22,16 @@ class BaleWebhookController extends Controller
     public function handle(Request $request)
     {
         $data = $request->all();
+
+        $messageId = $data['message']['message_id'] ?? null;
+
+        if ($messageId) {
+            if (ProcessedMessage::where('message_id', $messageId)->exists()) {
+                return response()->json(['ok' => true]);
+            }
+
+            ProcessedMessage::create(['message_id' => $messageId]);
+        }
 
         /* ---------- Callbacks ---------- */
 
@@ -45,6 +56,17 @@ class BaleWebhookController extends Controller
         /* ---------- Start ---------- */
 
         if ($text === '/start') {
+
+            // اگر قبلا ثبت نام کامل شده
+            if ($user->step === 'completed') {
+
+                $this->sendMainMenu(
+                    $chat_id,
+                    "قبلاً ثبت‌نام کردی ✅\nاز منوی زیر استفاده کن."
+                );
+
+                return response()->json(['ok' => true]);
+            }
 
             $user->profile()->firstOrCreate([]);
 
@@ -183,6 +205,13 @@ class BaleWebhookController extends Controller
             'meal_time' => Carbon::today()
         ]);
 
+        $meal->items()->delete();
+
+        $meal->update([
+            'total_calories' => 0,
+            'total_protein' => 0
+        ]);
+
         $foods = $this->ai->analyze($text);
 
         $totalCalories = 0;
@@ -203,8 +232,10 @@ class BaleWebhookController extends Controller
             $totalProtein += $pro;
         }
 
-        $meal->increment('total_calories', $totalCalories);
-        $meal->increment('total_protein', $totalProtein);
+        $meal->update([
+            'total_calories' => $totalCalories,
+            'total_protein' => $totalProtein
+        ]);
     }
 
     /* ---------- Report ---------- */
