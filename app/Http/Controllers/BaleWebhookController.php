@@ -69,6 +69,16 @@ class BaleWebhookController extends Controller
             }
 
             $user->profile()->firstOrCreate([]);
+            $this->sendMessage($chat_id,
+                "👋 سلام، خوش اومدی!\n\n".
+                "من بهت کمک می‌کنم:\n".
+                "• کالری و پروتئین غذات رو حساب کنی\n".
+                "• مصرف روزانه‌ات رو ببینی\n".
+                "• راحت‌تر به هدفت (کاهش یا افزایش وزن) برسی\n\n".
+                "برای اینکه مقدار کالری مناسب بدنت رو محاسبه کنم،\n".
+                "چند سوال کوتاه ازت می‌پرسم.\n\n".
+                "شروع کنیم 👇"
+            );
 
             $user->update([
                 'step' => 'awaiting_gender'
