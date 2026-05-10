@@ -40,7 +40,12 @@ class NutritionAIService
 
         return $foods;
     }
-    public function analyzeDailyReport($dailyFoodText, $profile)
+    public function analyzeDailyReport(
+        $dailyFoodText,
+        $profile,
+        $targetCalories,
+        $targetProtein
+    )
     {
         $age = $profile->age;
         $height = $profile->height;
@@ -65,21 +70,31 @@ $dailyFoodText
 سطح فعالیت: $activity
 هدف: $goal
 
+کالری هدف روزانه:
+$targetCalories
 
-بر اساس اطلاعات بالا تحلیل کن:
+پروتئین هدف روزانه:
+$targetProtein گرم
 
-1- امروز تقریبا چند کالری مصرف شده
-2- کالری مناسب روزانه برای این فرد چقدر است
-3- پروتئین مصرفی امروز چقدر است
-4- پروتئین مناسب روزانه چقدر است
 
-پاسخ کوتاه و قابل فهم بده و از ایموجی استفاده کن.
+وظیفه تو:
 
-فرمت خروجی دقیقا این باشد:
+1- تخمین بزن امروز چند کالری مصرف شده
+2- تخمین بزن چند گرم پروتئین مصرف شده
+3- وضعیت امروز را تحلیل کن
+4- پاسخ کوتاه و کاربردی باشد
+5- از ایموجی استفاده کن
 
-امروز n کالری دریافت کردی که مقدار مناسب برای تو n کالری است.
 
-امروز n گرم پروتئین دریافت کردی که مقدار مناسب برای تو n گرم است.
+فرمت پاسخ:
+
+
+🔥 کالری مصرفی امروز: n
+🎯 کالری هدف روزانه: $targetCalories
+
+💪 پروتئین مصرفی امروز: n
+🎯 پروتئین هدف روزانه: $targetProtein
+
 
 📊 جمع‌بندی کوتاه
 
@@ -87,7 +102,7 @@ $dailyFoodText
 
 ✅ نکات مثبت امروز
 
-💡 توصیه های کوتاه
+💡 توصیه کوتاه
 ";
 
         $response = Http::withHeaders([
@@ -107,6 +122,7 @@ $dailyFoodText
             'temperature' => 0.4
         ]);
 
-        return $response['choices'][0]['message']['content'] ?? "تحلیل انجام نشد";
+        return $response['choices'][0]['message']['content']
+            ?? "تحلیل انجام نشد";
     }
 }

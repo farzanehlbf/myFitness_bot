@@ -94,10 +94,34 @@ class BaleWebhookController extends Controller
         if ($user->step === 'completed' || str_starts_with($user->step, 'awaiting_')) {
 
             if ($text === '🍳 ثبت صبحانه') {
-                $user->update(['step' => 'awaiting_breakfast']);
-                $message = "صبحانه چی خوردی؟ 🍳
 
-لطفاً مقدار تقریبی را هم بنویس تا دقیق‌تر حساب کنم.
+                $existingMeal = Meal::where('user_id', $user->id)
+                    ->where('meal_type', 'breakfast')
+                    ->whereDate('meal_time', Carbon::today())
+                    ->exists();
+
+                $user->update(['step' => 'awaiting_breakfast']);
+
+                if ($existingMeal) {
+
+                    $this->sendMessage($chat_id,
+                        "برای امروز صبحانه ثبت شده.\n\n".
+                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "اگر میخواهی از اول ثبت شود دکمه زیر را بزن.",
+                        [
+                            'keyboard' => [
+                                [['text' => '🔄 پاک کردن صبحانه']],
+                                [['text' => '✅ تمام شد']]
+                            ],
+                            'resize_keyboard' => true
+                        ]
+                    );
+
+                } else {
+
+                    $message = "صبحانه چی خوردی؟ 🍳
+
+لطفاً مقدار تقریبی را هم بنویس.
 
 مثال:
 یک عدد تخم مرغ
@@ -106,61 +130,139 @@ class BaleWebhookController extends Controller
 30 گرم پنیر
 یک لیوان شیر";
 
-                $this->sendMessage($chat_id,$message);
+                    $this->sendMessage($chat_id,$message);
+                }
+
                 return response()->json(['ok' => true]);
             }
 
-            if ($text === '🍱 ثبت ناهار') {
-                $user->update(['step' => 'awaiting_lunch']);
-                $message = "ناهار چی خوردی؟ 🍽️
 
-لطفاً مقدار غذا را هم بنویس.
+            if ($text === '🍱 ثبت ناهار') {
+
+                $existingMeal = Meal::where('user_id', $user->id)
+                    ->where('meal_type', 'lunch')
+                    ->whereDate('meal_time', Carbon::today())
+                    ->exists();
+
+                $user->update(['step' => 'awaiting_lunch']);
+
+                if ($existingMeal) {
+
+                    $this->sendMessage($chat_id,
+                        "برای امروز ناهار ثبت شده.\n\n".
+                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "یا برای شروع دوباره دکمه زیر را بزن.",
+                        [
+                            'keyboard' => [
+                                [['text' => '🔄 پاک کردن ناهار']],
+                                [['text' => '✅ تمام شد']]
+                            ],
+                            'resize_keyboard' => true
+                        ]
+                    );
+
+                } else {
+
+                    $message = "ناهار چی خوردی؟ 🍽️
 
 مثال:
 یک بشقاب برنج
 8 قاشق برنج
 120 گرم مرغ
-یک کاسه ماست
-یک کف دست نان";
-                $this->sendMessage($chat_id,$message);
+یک کاسه ماست";
+
+                    $this->sendMessage($chat_id,$message);
+                }
+
                 return response()->json(['ok' => true]);
             }
 
-            if ($text === '🍗 ثبت شام') {
-                $user->update(['step' => 'awaiting_dinner']);
-                $message = "شام چی خوردی؟ 🌙
 
-برای دقت بیشتر مقدار را هم بنویس.
+            if ($text === '🍗 ثبت شام') {
+
+                $existingMeal = Meal::where('user_id', $user->id)
+                    ->where('meal_type', 'dinner')
+                    ->whereDate('meal_time', Carbon::today())
+                    ->exists();
+
+                $user->update(['step' => 'awaiting_dinner']);
+
+                if ($existingMeal) {
+
+                    $this->sendMessage($chat_id,
+                        "برای امروز شام ثبت شده.\n\n".
+                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "یا برای شروع دوباره دکمه زیر را بزن.",
+                        [
+                            'keyboard' => [
+                                [['text' => '🔄 پاک کردن شام']],
+                                [['text' => '✅ تمام شد']]
+                            ],
+                            'resize_keyboard' => true
+                        ]
+                    );
+
+                } else {
+
+                    $message = "شام چی خوردی؟ 🌙
 
 مثال:
 دو کف دست نان
 80 گرم مرغ
-یک کاسه ماست
-یک لیوان دوغ";
-                $this->sendMessage($chat_id,$message);
+یک کاسه ماست";
+
+                    $this->sendMessage($chat_id,$message);
+                }
+
                 return response()->json(['ok' => true]);
             }
+
 
             if ($text === '🍎 میان وعده') {
+
+                $existingMeal = Meal::where('user_id', $user->id)
+                    ->where('meal_type', 'snack')
+                    ->whereDate('meal_time', Carbon::today())
+                    ->exists();
+
                 $user->update(['step' => 'awaiting_snack']);
 
-                $message = "میان وعده چی خوردی؟ 🍎
+                if ($existingMeal) {
 
-مقدار را هم بنویس.
+                    $this->sendMessage($chat_id,
+                        "برای امروز میان وعده ثبت شده.\n\n".
+                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "یا برای شروع دوباره دکمه زیر را بزن.",
+                        [
+                            'keyboard' => [
+                                [['text' => '🔄 پاک کردن میان وعده']],
+                                [['text' => '✅ تمام شد']]
+                            ],
+                            'resize_keyboard' => true
+                        ]
+                    );
+
+                } else {
+
+                    $message = "میان وعده چی خوردی؟ 🍎
 
 مثال:
-یک عدد سیب
+یک سیب
 10 عدد بادام
-یک لیوان شیر
-یک برش کیک";
-                $this->sendMessage($chat_id,$message);
+یک لیوان شیر";
+
+                    $this->sendMessage($chat_id,$message);
+                }
+
                 return response()->json(['ok' => true]);
             }
+
 
             if ($text === '📊 گزارش امروز') {
                 $this->sendTodayReport($user, $chat_id);
                 return response()->json(['ok' => true]);
             }
+
 
             if ($text === '✅ تمام شد') {
                 $user->update(['step' => 'completed']);
@@ -255,13 +357,6 @@ class BaleWebhookController extends Controller
             'meal_time' => Carbon::today()
         ]);
 
-        $meal->items()->delete();
-
-        $meal->update([
-            'total_calories' => 0,
-            'total_protein' => 0
-        ]);
-
         $foods = $this->ai->analyze($text);
 
         $totalCalories = 0;
@@ -282,10 +377,8 @@ class BaleWebhookController extends Controller
             $totalProtein += $pro;
         }
 
-        $meal->update([
-            'total_calories' => $totalCalories,
-            'total_protein' => $totalProtein
-        ]);
+        $meal->increment('total_calories', $totalCalories);
+        $meal->increment('total_protein', $totalProtein);
     }
 
     /* ---------- Report ---------- */
@@ -326,8 +419,10 @@ class BaleWebhookController extends Controller
         }
 
         $profile = $user->profile;
+        $targetCalories = $this->calculateCalories($profile);
+        $targetProtein = round($profile->weight * 1.6);
 
-        $analysis = $this->ai->analyzeDailyReport($dailyFoodText, $profile);
+        $analysis = $this->ai->analyzeDailyReport($dailyFoodText, $profile,$targetCalories,$targetProtein);
 
         $this->sendMessage($chat_id, $analysis);
     }
