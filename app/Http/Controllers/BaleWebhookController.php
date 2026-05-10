@@ -285,7 +285,9 @@ class BaleWebhookController extends Controller
             }
         }
 
-        $analysis = $this->ai->analyzeDailyReport($dailyFoodText);
+        $profile = $user->profile;
+
+        $analysis = $this->ai->analyzeDailyReport($dailyFoodText, $profile);
 
         $this->sendMessage($chat_id, $analysis);
     }
