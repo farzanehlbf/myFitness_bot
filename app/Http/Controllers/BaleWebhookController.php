@@ -257,25 +257,37 @@ class BaleWebhookController extends Controller
             ->with('items')
             ->get();
 
-        $totalCal = $meals->sum('total_calories');
-        $totalProt = $meals->sum('total_protein');
+        if ($meals->isEmpty()) {
+            $this->sendMessage($chat_id, "امروز هنوز غذایی ثبت نکردی 🍽️");
+            return;
+        }
 
-        $target = $user->profile->daily_calories ?? 2000;
-
-        $text = "📊 گزارش امروز\n\n";
+        $dailyFoodText = "";
 
         foreach ($meals as $meal) {
 
-            $items = $meal->items->pluck('name')->implode(' ، ');
+            $items = $meal->items->pluck('name')->implode(' و ');
 
-            $text .= $meal->meal_type . ":\n";
-            $text .= $items . "\n\n";
+            if ($meal->meal_type == 'breakfast') {
+                $dailyFoodText .= "صبحانه : $items\n";
+            }
+
+            if ($meal->meal_type == 'lunch') {
+                $dailyFoodText .= "ناهار : $items\n";
+            }
+
+            if ($meal->meal_type == 'dinner') {
+                $dailyFoodText .= "شام : $items\n";
+            }
+
+            if ($meal->meal_type == 'snack') {
+                $dailyFoodText .= "میان وعده : $items\n";
+            }
         }
 
-        $text .= "🔥 کالری: $totalCal / $target\n";
-        $text .= "💪 پروتئین: $totalProt g";
+        $analysis = $this->ai->analyzeDailyReport($dailyFoodText);
 
-        $this->sendMessage($chat_id, $text);
+        $this->sendMessage($chat_id, $analysis);
     }
 
     /* ---------- Callbacks ---------- */
