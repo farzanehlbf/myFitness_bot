@@ -57,9 +57,7 @@ class BaleWebhookController extends Controller
 
         if ($text === '/start') {
 
-            // اگر قبلا ثبت نام کامل شده
             if ($user->step === 'completed') {
-
                 $this->sendMainMenu(
                     $chat_id,
                     "قبلاً ثبت‌نام کردی ✅\nاز منوی زیر استفاده کن."
@@ -69,7 +67,9 @@ class BaleWebhookController extends Controller
             }
 
             $user->profile()->firstOrCreate([]);
-            $this->sendMessage($chat_id,
+
+            $this->sendMessage(
+                $chat_id,
                 "👋 سلام، خوش اومدی!\n\n".
                 "من بهت کمک می‌کنم:\n".
                 "• کالری و پروتئین غذات رو حساب کنی\n".
@@ -91,7 +91,7 @@ class BaleWebhookController extends Controller
 
         /* ---------- Main Menu ---------- */
 
-        if ($user->step === 'completed' || str_starts_with($user->step, 'awaiting_')) {
+        if ($user->step === 'completed' || str_starts_with($user->step, 'awaiting_') || str_starts_with($user->step, 'editing_')) {
 
             if ($text === '🍳 ثبت صبحانه') {
 
@@ -103,11 +103,10 @@ class BaleWebhookController extends Controller
                 $user->update(['step' => 'awaiting_breakfast']);
 
                 if ($existingMeal) {
-
                     $this->sendMessage($chat_id,
                         "برای امروز صبحانه ثبت شده.\n\n".
-                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
-                        "اگر میخواهی از اول ثبت شود دکمه زیر را بزن.",
+                        "اگر می‌خواهی ادامه بدهی غذا را بفرست.\n".
+                        "اگر می‌خواهی از اول ثبت شود دکمه زیر را بزن.",
                         [
                             'keyboard' => [
                                 [['text' => '🔄 پاک کردن صبحانه']],
@@ -116,26 +115,21 @@ class BaleWebhookController extends Controller
                             'resize_keyboard' => true
                         ]
                     );
-
                 } else {
+                    $message = "صبحانه چی خوردی؟ 🍳\n\n".
+                        "لطفاً مقدار تقریبی را هم بنویس.\n\n".
+                        "مثال:\n".
+                        "یک عدد تخم مرغ\n".
+                        "2 عدد تخم مرغ\n".
+                        "یک کف دست نان\n".
+                        "30 گرم پنیر\n".
+                        "یک لیوان شیر";
 
-                    $message = "صبحانه چی خوردی؟ 🍳
-
-لطفاً مقدار تقریبی را هم بنویس.
-
-مثال:
-یک عدد تخم مرغ
-2 عدد تخم مرغ
-یک کف دست نان
-30 گرم پنیر
-یک لیوان شیر";
-
-                    $this->sendMessage($chat_id,$message);
+                    $this->sendMessage($chat_id, $message);
                 }
 
                 return response()->json(['ok' => true]);
             }
-
 
             if ($text === '🍱 ثبت ناهار') {
 
@@ -147,10 +141,9 @@ class BaleWebhookController extends Controller
                 $user->update(['step' => 'awaiting_lunch']);
 
                 if ($existingMeal) {
-
                     $this->sendMessage($chat_id,
                         "برای امروز ناهار ثبت شده.\n\n".
-                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "اگر می‌خواهی ادامه بدهی غذا را بفرست.\n".
                         "یا برای شروع دوباره دکمه زیر را بزن.",
                         [
                             'keyboard' => [
@@ -160,23 +153,19 @@ class BaleWebhookController extends Controller
                             'resize_keyboard' => true
                         ]
                     );
-
                 } else {
+                    $message = "ناهار چی خوردی؟ 🍽️\n\n".
+                        "مثال:\n".
+                        "یک بشقاب برنج\n".
+                        "8 قاشق برنج\n".
+                        "120 گرم مرغ\n".
+                        "یک کاسه ماست";
 
-                    $message = "ناهار چی خوردی؟ 🍽️
-
-مثال:
-یک بشقاب برنج
-8 قاشق برنج
-120 گرم مرغ
-یک کاسه ماست";
-
-                    $this->sendMessage($chat_id,$message);
+                    $this->sendMessage($chat_id, $message);
                 }
 
                 return response()->json(['ok' => true]);
             }
-
 
             if ($text === '🍗 ثبت شام') {
 
@@ -188,10 +177,9 @@ class BaleWebhookController extends Controller
                 $user->update(['step' => 'awaiting_dinner']);
 
                 if ($existingMeal) {
-
                     $this->sendMessage($chat_id,
                         "برای امروز شام ثبت شده.\n\n".
-                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "اگر می‌خواهی ادامه بدهی غذا را بفرست.\n".
                         "یا برای شروع دوباره دکمه زیر را بزن.",
                         [
                             'keyboard' => [
@@ -201,22 +189,18 @@ class BaleWebhookController extends Controller
                             'resize_keyboard' => true
                         ]
                     );
-
                 } else {
+                    $message = "شام چی خوردی؟ 🌙\n\n".
+                        "مثال:\n".
+                        "دو کف دست نان\n".
+                        "80 گرم مرغ\n".
+                        "یک کاسه ماست";
 
-                    $message = "شام چی خوردی؟ 🌙
-
-مثال:
-دو کف دست نان
-80 گرم مرغ
-یک کاسه ماست";
-
-                    $this->sendMessage($chat_id,$message);
+                    $this->sendMessage($chat_id, $message);
                 }
 
                 return response()->json(['ok' => true]);
             }
-
 
             if ($text === '🍎 میان وعده') {
 
@@ -228,10 +212,9 @@ class BaleWebhookController extends Controller
                 $user->update(['step' => 'awaiting_snack']);
 
                 if ($existingMeal) {
-
                     $this->sendMessage($chat_id,
                         "برای امروز میان وعده ثبت شده.\n\n".
-                        "اگر میخواهی ادامه بدهی غذا را بفرست.\n".
+                        "اگر می‌خواهی ادامه بدهی غذا را بفرست.\n".
                         "یا برای شروع دوباره دکمه زیر را بزن.",
                         [
                             'keyboard' => [
@@ -241,28 +224,168 @@ class BaleWebhookController extends Controller
                             'resize_keyboard' => true
                         ]
                     );
-
                 } else {
+                    $message = "میان وعده چی خوردی؟ 🍎\n\n".
+                        "مثال:\n".
+                        "یک سیب\n".
+                        "10 عدد بادام\n".
+                        "یک لیوان شیر";
 
-                    $message = "میان وعده چی خوردی؟ 🍎
-
-مثال:
-یک سیب
-10 عدد بادام
-یک لیوان شیر";
-
-                    $this->sendMessage($chat_id,$message);
+                    $this->sendMessage($chat_id, $message);
                 }
 
                 return response()->json(['ok' => true]);
             }
 
+            if ($text === '🔄 پاک کردن صبحانه') {
+                $this->resetMeal($user, 'breakfast');
+                $user->update(['step' => 'awaiting_breakfast']);
+
+                $this->sendMessage($chat_id,
+                    "صبحانه پاک شد ✅\nحالا صبحانه جدید را بفرست.",
+                    [
+                        'keyboard' => [
+                            [['text' => '✅ تمام شد']]
+                        ],
+                        'resize_keyboard' => true
+                    ]
+                );
+
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '🔄 پاک کردن ناهار') {
+                $this->resetMeal($user, 'lunch');
+                $user->update(['step' => 'awaiting_lunch']);
+
+                $this->sendMessage($chat_id,
+                    "ناهار پاک شد ✅\nحالا ناهار جدید را بفرست.",
+                    [
+                        'keyboard' => [
+                            [['text' => '✅ تمام شد']]
+                        ],
+                        'resize_keyboard' => true
+                    ]
+                );
+
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '🔄 پاک کردن شام') {
+                $this->resetMeal($user, 'dinner');
+                $user->update(['step' => 'awaiting_dinner']);
+
+                $this->sendMessage($chat_id,
+                    "شام پاک شد ✅\nحالا شام جدید را بفرست.",
+                    [
+                        'keyboard' => [
+                            [['text' => '✅ تمام شد']]
+                        ],
+                        'resize_keyboard' => true
+                    ]
+                );
+
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '🔄 پاک کردن میان وعده') {
+                $this->resetMeal($user, 'snack');
+                $user->update(['step' => 'awaiting_snack']);
+
+                $this->sendMessage($chat_id,
+                    "میان وعده پاک شد ✅\nحالا میان وعده جدید را بفرست.",
+                    [
+                        'keyboard' => [
+                            [['text' => '✅ تمام شد']]
+                        ],
+                        'resize_keyboard' => true
+                    ]
+                );
+
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '👤 پروفایل من') {
+
+                $profile = $user->profile;
+
+                $goalText = [
+                    'loss' => 'کاهش وزن',
+                    'gain' => 'افزایش وزن',
+                    'maintain' => 'ثابت نگه داشتن'
+                ];
+
+                $activityText = [
+                    'low' => 'کم',
+                    'medium' => 'متوسط',
+                    'high' => 'زیاد'
+                ];
+
+                $genderText = $profile->gender === 'male' ? 'آقا' : 'خانم';
+
+                $message =
+                    "👤 پروفایل شما\n\n".
+                    "جنسیت: {$genderText}\n".
+                    "سن: {$profile->age}\n".
+                    "وزن: {$profile->weight} کیلو\n".
+                    "قد: {$profile->height} سانتی‌متر\n".
+                    "هدف: ".$goalText[$profile->goal]."\n".
+                    "فعالیت: ".$activityText[$profile->activity_level]."\n\n".
+                    "کالری روزانه هدف: {$profile->daily_calories} kcal";
+
+                $this->sendMessage($chat_id, $message, [
+                    'keyboard' => [
+                        [['text' => '✏️ ویرایش وزن']],
+                        [['text' => '✏️ ویرایش هدف']],
+                        [['text' => '✏️ ویرایش فعالیت']],
+                        [['text' => '🔙 بازگشت']]
+                    ],
+                    'resize_keyboard' => true
+                ]);
+
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '✏️ ویرایش وزن') {
+                $user->update([
+                    'step' => 'editing_weight'
+                ]);
+
+                $this->sendMessage($chat_id, "وزن جدید را وارد کن.\nمثال: 78");
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '✏️ ویرایش هدف') {
+                $user->update([
+                    'step' => 'editing_goal'
+                ]);
+
+                $this->askGoal($chat_id);
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '✏️ ویرایش فعالیت') {
+                $user->update([
+                    'step' => 'editing_activity'
+                ]);
+
+                $this->askActivity($chat_id);
+                return response()->json(['ok' => true]);
+            }
+
+            if ($text === '🔙 بازگشت') {
+                $user->update([
+                    'step' => 'completed'
+                ]);
+
+                $this->sendMainMenu($chat_id, "منوی اصلی");
+                return response()->json(['ok' => true]);
+            }
 
             if ($text === '📊 گزارش امروز') {
                 $this->sendTodayReport($user, $chat_id);
                 return response()->json(['ok' => true]);
             }
-
 
             if ($text === '✅ تمام شد') {
                 $user->update(['step' => 'completed']);
@@ -296,6 +419,11 @@ class BaleWebhookController extends Controller
 
             case 'awaiting_weight':
 
+                if (!is_numeric($text)) {
+                    $this->sendMessage($chat_id, "وزن معتبر وارد کنید");
+                    break;
+                }
+
                 $user->profile->update([
                     'weight' => $text
                 ]);
@@ -304,11 +432,16 @@ class BaleWebhookController extends Controller
                     'step' => 'awaiting_height'
                 ]);
 
-                $this->sendMessage($chat_id, "قد شما چند سانتی متر است؟");
+                $this->sendMessage($chat_id, "قد شما چند سانتی‌متر است؟");
 
                 break;
 
             case 'awaiting_height':
+
+                if (!is_numeric($text)) {
+                    $this->sendMessage($chat_id, "قد معتبر وارد کنید");
+                    break;
+                }
 
                 $user->profile->update([
                     'height' => $text
@@ -319,6 +452,34 @@ class BaleWebhookController extends Controller
                 ]);
 
                 $this->askGoal($chat_id);
+
+                break;
+
+            case 'editing_weight':
+
+                if (!is_numeric($text)) {
+                    $this->sendMessage($chat_id, "فقط عدد وارد کن");
+                    break;
+                }
+
+                $user->profile->update([
+                    'weight' => $text
+                ]);
+
+                $newCalories = $this->calculateCalories($user->profile);
+
+                $user->profile->update([
+                    'daily_calories' => $newCalories
+                ]);
+
+                $user->update([
+                    'step' => 'completed'
+                ]);
+
+                $this->sendMainMenu(
+                    $chat_id,
+                    "✅ وزن بروزرسانی شد\nکالری جدید: {$newCalories} kcal"
+                );
 
                 break;
 
@@ -351,11 +512,17 @@ class BaleWebhookController extends Controller
     {
         $type = str_replace('awaiting_', '', $user->step);
 
-        $meal = Meal::firstOrCreate([
-            'user_id' => $user->id,
-            'meal_type' => $type,
-            'meal_time' => Carbon::today()
-        ]);
+        $meal = Meal::firstOrCreate(
+            [
+                'user_id' => $user->id,
+                'meal_type' => $type,
+                'meal_time' => Carbon::today()
+            ],
+            [
+                'total_calories' => 0,
+                'total_protein' => 0
+            ]
+        );
 
         $foods = $this->ai->analyze($text);
 
@@ -363,7 +530,6 @@ class BaleWebhookController extends Controller
         $totalProtein = 0;
 
         foreach ($foods as $food) {
-
             $cal = $food['calories'] ?? 0;
             $pro = $food['protein'] ?? 0;
 
@@ -396,8 +562,6 @@ class BaleWebhookController extends Controller
             return;
         }
 
-        $dailyFoodText = "";
-
         $mealTypes = [
             'breakfast' => 'صبحانه',
             'lunch' => 'ناهار',
@@ -405,15 +569,21 @@ class BaleWebhookController extends Controller
             'snack' => 'میان وعده'
         ];
 
-        foreach ($mealTypes as $type => $title) {
+        $dailyFoodText = '';
+        $actualCalories = 0;
+        $actualProtein = 0;
 
-            $dailyFoodText .= "$title:\n";
+        foreach ($mealTypes as $type => $title) {
+            $dailyFoodText .= "{$title}:\n";
 
             if (isset($meals[$type]) && $meals[$type]->items->count()) {
 
                 foreach ($meals[$type]->items as $item) {
                     $dailyFoodText .= "• {$item->name}\n";
                 }
+
+                $actualCalories += $meals[$type]->total_calories ?? 0;
+                $actualProtein += $meals[$type]->total_protein ?? 0;
 
             } else {
                 $dailyFoodText .= "• ثبت نشده\n";
@@ -431,7 +601,9 @@ class BaleWebhookController extends Controller
             $dailyFoodText,
             $profile,
             $targetCalories,
-            $targetProtein
+            $targetProtein,
+            $actualCalories,
+            $actualProtein
         );
 
         $this->sendMessage($chat_id, $analysis);
@@ -446,9 +618,15 @@ class BaleWebhookController extends Controller
 
         $user = User::where('bale_chat_id', $chat_id)->first();
 
+        if (!$user) {
+            return;
+        }
+
         if (str_contains($data, 'gender')) {
 
             $gender = str_replace('gender_', '', $data);
+
+            $user->profile()->firstOrCreate([]);
 
             $user->profile->update([
                 'gender' => $gender
@@ -459,6 +637,7 @@ class BaleWebhookController extends Controller
             ]);
 
             $this->sendMessage($chat_id, "سن شما چند سال است؟");
+            return;
         }
 
         if (str_contains($data, 'goal')) {
@@ -469,11 +648,33 @@ class BaleWebhookController extends Controller
                 'goal' => $goal
             ]);
 
-            $user->update([
-                'step' => 'awaiting_activity'
-            ]);
+            if ($user->step === 'editing_goal') {
 
-            $this->askActivity($chat_id);
+                $newCalories = $this->calculateCalories($user->profile);
+
+                $user->profile->update([
+                    'daily_calories' => $newCalories
+                ]);
+
+                $user->update([
+                    'step' => 'completed'
+                ]);
+
+                $this->sendMainMenu(
+                    $chat_id,
+                    "✅ هدف بروزرسانی شد\nکالری جدید: {$newCalories} kcal"
+                );
+
+            } else {
+
+                $user->update([
+                    'step' => 'awaiting_activity'
+                ]);
+
+                $this->askActivity($chat_id);
+            }
+
+            return;
         }
 
         if (str_contains($data, 'activity')) {
@@ -484,7 +685,29 @@ class BaleWebhookController extends Controller
                 'activity_level' => $activity
             ]);
 
-            $this->finishProfile($user, $chat_id);
+            if ($user->step === 'editing_activity') {
+
+                $newCalories = $this->calculateCalories($user->profile);
+
+                $user->profile->update([
+                    'daily_calories' => $newCalories
+                ]);
+
+                $user->update([
+                    'step' => 'completed'
+                ]);
+
+                $this->sendMainMenu(
+                    $chat_id,
+                    "✅ سطح فعالیت بروزرسانی شد\nکالری جدید: {$newCalories} kcal"
+                );
+
+            } else {
+
+                $this->finishProfile($user, $chat_id);
+            }
+
+            return;
         }
     }
 
@@ -508,6 +731,27 @@ class BaleWebhookController extends Controller
             "✅ پروفایل ساخته شد\n\nهدف کالری روزانه شما: $calories kcal"
         );
     }
+
+    private function resetMeal($user, $mealType)
+    {
+        $meal = Meal::where('user_id', $user->id)
+            ->where('meal_type', $mealType)
+            ->whereDate('meal_time', Carbon::today())
+            ->with('items')
+            ->first();
+
+        if (!$meal) {
+            return;
+        }
+
+        $meal->items()->delete();
+
+        $meal->update([
+            'total_calories' => 0,
+            'total_protein' => 0
+        ]);
+    }
+
 
     /* ---------- Calories ---------- */
 
@@ -548,14 +792,15 @@ class BaleWebhookController extends Controller
     {
         $keyboard = [
             'keyboard' => [
-                [['text'=>'🍳 ثبت صبحانه'],['text'=>'🍱 ثبت ناهار']],
-                [['text'=>'🍗 ثبت شام'],['text'=>'🍎 میان وعده']],
-                [['text'=>'📊 گزارش امروز']]
+                [['text' => '🍳 ثبت صبحانه'], ['text' => '🍱 ثبت ناهار']],
+                [['text' => '🍗 ثبت شام'], ['text' => '🍎 میان وعده']],
+                [['text' => '📊 گزارش امروز']],
+                [['text' => '👤 پروفایل من']]
             ],
-            'resize_keyboard'=>true
+            'resize_keyboard' => true
         ];
 
-        $this->sendMessage($chat_id,$text,$keyboard);
+        $this->sendMessage($chat_id, $text, $keyboard);
     }
 
     private function askGender($chat_id)
