@@ -95,25 +95,65 @@ class BaleWebhookController extends Controller
 
             if ($text === '🍳 ثبت صبحانه') {
                 $user->update(['step' => 'awaiting_breakfast']);
-                $this->sendMessage($chat_id, "صبحانه چی خوردی؟");
+                $message = "صبحانه چی خوردی؟ 🍳
+
+لطفاً مقدار تقریبی را هم بنویس تا دقیق‌تر حساب کنم.
+
+مثال:
+یک عدد تخم مرغ
+2 عدد تخم مرغ
+یک کف دست نان
+30 گرم پنیر
+یک لیوان شیر";
+
+                $this->sendMessage($chat_id,$message);
                 return response()->json(['ok' => true]);
             }
 
             if ($text === '🍱 ثبت ناهار') {
                 $user->update(['step' => 'awaiting_lunch']);
-                $this->sendMessage($chat_id, "ناهار چی خوردی؟");
+                $message = "ناهار چی خوردی؟ 🍽️
+
+لطفاً مقدار غذا را هم بنویس.
+
+مثال:
+یک بشقاب برنج
+8 قاشق برنج
+120 گرم مرغ
+یک کاسه ماست
+یک کف دست نان";
+                $this->sendMessage($chat_id,$message);
                 return response()->json(['ok' => true]);
             }
 
             if ($text === '🍗 ثبت شام') {
                 $user->update(['step' => 'awaiting_dinner']);
-                $this->sendMessage($chat_id, "شام چی خوردی؟");
+                $message = "شام چی خوردی؟ 🌙
+
+برای دقت بیشتر مقدار را هم بنویس.
+
+مثال:
+دو کف دست نان
+80 گرم مرغ
+یک کاسه ماست
+یک لیوان دوغ";
+                $this->sendMessage($chat_id,$message);
                 return response()->json(['ok' => true]);
             }
 
             if ($text === '🍎 میان وعده') {
                 $user->update(['step' => 'awaiting_snack']);
-                $this->sendMessage($chat_id, "میان وعده چی خوردی؟");
+
+                $message = "میان وعده چی خوردی؟ 🍎
+
+مقدار را هم بنویس.
+
+مثال:
+یک عدد سیب
+10 عدد بادام
+یک لیوان شیر
+یک برش کیک";
+                $this->sendMessage($chat_id,$message);
                 return response()->json(['ok' => true]);
             }
 
