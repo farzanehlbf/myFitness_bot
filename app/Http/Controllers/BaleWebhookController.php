@@ -331,7 +331,7 @@ class BaleWebhookController extends Controller
                     "قد: {$profile->height} سانتی‌متر\n".
                     "هدف: ".$goalText[$profile->goal]."\n".
                     "فعالیت: ".$activityText[$profile->activity_level]."\n\n".
-                    "کالری روزانه هدف: {$profile->daily_calories} kcal";
+                    "کالری روزانه هدف: {$profile->calorie_target} kcal";
 
                 $this->sendMessage($chat_id, $message, [
                     'keyboard' => [
@@ -469,7 +469,7 @@ class BaleWebhookController extends Controller
                 $newCalories = $this->calculateCalories($user->profile);
 
                 $user->profile->update([
-                    'daily_calories' => $newCalories
+                    'calorie_target' => $newCalories
                 ]);
 
                 $user->update([
@@ -594,7 +594,7 @@ class BaleWebhookController extends Controller
 
         $profile = $user->profile;
 
-        $targetCalories = $this->calculateCalories($profile);
+        $targetCalories = $profile->calorie_target;
         $targetProtein = round($profile->weight * 1.6);
 
         $analysis = $this->ai->analyzeDailyReport(
@@ -653,7 +653,7 @@ class BaleWebhookController extends Controller
                 $newCalories = $this->calculateCalories($user->profile);
 
                 $user->profile->update([
-                    'daily_calories' => $newCalories
+                    'calorie_target' => $newCalories
                 ]);
 
                 $user->update([
@@ -690,7 +690,7 @@ class BaleWebhookController extends Controller
                 $newCalories = $this->calculateCalories($user->profile);
 
                 $user->profile->update([
-                    'daily_calories' => $newCalories
+                    'calorie_target' => $newCalories
                 ]);
 
                 $user->update([
@@ -720,7 +720,7 @@ class BaleWebhookController extends Controller
         $calories = $this->calculateCalories($profile);
 
         $profile->update([
-            'daily_calories' => $calories
+            'calorie_target' => $calories
         ]);
 
         $user->update([
