@@ -388,7 +388,8 @@ class BaleWebhookController extends Controller
         $meals = Meal::where('user_id', $user->id)
             ->whereDate('meal_time', Carbon::today())
             ->with('items')
-            ->get();
+            ->get()
+            ->keyBy('meal_type');
 
         if ($meals->isEmpty()) {
             $this->sendMessage($chat_id, "امروز هنوز غذایی ثبت نکردی 🍽️");
@@ -397,32 +398,41 @@ class BaleWebhookController extends Controller
 
         $dailyFoodText = "";
 
-        foreach ($meals as $meal) {
+        $mealTypes = [
+            'breakfast' => 'صبحانه',
+            'lunch' => 'ناهار',
+            'dinner' => 'شام',
+            'snack' => 'میان وعده'
+        ];
 
-            $items = $meal->items->pluck('name')->implode(' و ');
+        foreach ($mealTypes as $type => $title) {
 
-            if ($meal->meal_type == 'breakfast') {
-                $dailyFoodText .= "صبحانه : $items\n";
+            $dailyFoodText .= "$title:\n";
+
+            if (isset($meals[$type]) && $meals[$type]->items->count()) {
+
+                foreach ($meals[$type]->items as $item) {
+                    $dailyFoodText .= "• {$item->name}\n";
+                }
+
+            } else {
+                $dailyFoodText .= "• ثبت نشده\n";
             }
 
-            if ($meal->meal_type == 'lunch') {
-                $dailyFoodText .= "ناهار : $items\n";
-            }
-
-            if ($meal->meal_type == 'dinner') {
-                $dailyFoodText .= "شام : $items\n";
-            }
-
-            if ($meal->meal_type == 'snack') {
-                $dailyFoodText .= "میان وعده : $items\n";
-            }
+            $dailyFoodText .= "\n";
         }
 
         $profile = $user->profile;
+
         $targetCalories = $this->calculateCalories($profile);
         $targetProtein = round($profile->weight * 1.6);
 
-        $analysis = $this->ai->analyzeDailyReport($dailyFoodText, $profile,$targetCalories,$targetProtein);
+        $analysis = $this->ai->analyzeDailyReport(
+            $dailyFoodText,
+            $profile,
+            $targetCalories,
+            $targetProtein
+        );
 
         $this->sendMessage($chat_id, $analysis);
     }
