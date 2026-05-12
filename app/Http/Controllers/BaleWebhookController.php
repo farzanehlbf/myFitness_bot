@@ -22,7 +22,7 @@ class BaleWebhookController extends Controller
     public function handle(Request $request)
     {
         $data = $request->all();
-
+        \Log::info('BALE DATA', $data);
         $messageId = $data['message']['message_id'] ?? null;
 
         if ($messageId) {
